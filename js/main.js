@@ -1,32 +1,91 @@
-import { TURN } from "./constants.js";
+import { TURN, CELL_VALUE, GAME_STATUS } from "./constants.js";
 import {
   getCellElementList,
   getCurrentTurnElement,
   getGameStatusElement,
   getCellElementAtIdx,
+  getReplayButtonElement,
 } from "./selectors.js";
+import { checkGameStatus } from "./utils.js";
 
+// console.log(checkGameStatus(["X", "O", "O", "", "X", "", "", "O", "X"]));
 // Global variables
 let currentTurn = TURN.CROSS;
-let isGameEnded = false;
+let gameStatus = GAME_STATUS.PLAYING;
 let cellValues = new Array(9).fill("");
+// console.log(cellValues);
 
 function toggleTurn() {
   currentTurn = currentTurn === TURN.CROSS ? TURN.CIRCLE : TURN.CROSS;
 }
+function updateGameStatus(newGameStatus) {
+  gameStatus = newGameStatus;
+
+  const gameStatusElement = getGameStatusElement();
+  if (gameStatusElement) gameStatusElement.textContent = newGameStatus;
+}
+
+function showReplayButton() {
+  const replayButton = getReplayButtonElement();
+  if (replayButton) replayButton.classList.add("show");
+}
+
+function highlightWinCells(winPositions) {
+  if (!Array.isArray(winPositions) || winPositions.length !== 3) {
+    throw new Error("Invalid win positions");
+  }
+
+  for (const position of winPositions) {
+    const cell = getCellElementAtIdx(position);
+    if (cell) cell.classList.add("win");
+  }
+}
 
 function handleCellClick(cell, index) {
-  const isClick =
+  const isClicked =
     cell.classList.contains(TURN.CIRCLE) || cell.classList.contains(TURN.CROSS);
 
-  if (isClick) return;
+  const isEndGame = gameStatus !== GAME_STATUS.PLAYING;
+
+  if (isClicked || isEndGame) return;
 
   // set selected cell
   cell.classList.add(currentTurn);
 
+  // update cellValues
+  cellValues[index] =
+    currentTurn === TURN.CIRCLE ? CELL_VALUE.CIRCLE : CELL_VALUE.CROSS;
+
   // toggle TURN
   toggleTurn();
-  console.log("click", cell, index);
+  // console.log("click", cell, index);
+
+  // check game status
+  const game = checkGameStatus(cellValues);
+  switch (game.status) {
+    case GAME_STATUS.ENDED: {
+      // update game status
+      updateGameStatus(game.status);
+      // show replay button
+      showReplayButton();
+      break;
+    }
+
+    case GAME_STATUS.X_WIN:
+    case GAME_STATUS.O_WIN: {
+      // update game status
+      updateGameStatus(game.status);
+      // show replay button
+      showReplayButton();
+      // highlight win cell
+      highlightWinCells(game.winPositions);
+      break;
+    }
+
+    default:
+    // playing
+  }
+
   //update turn on DOM element
   const currentTurnElement = getCurrentTurnElement();
   if (currentTurnElement) {
@@ -60,6 +119,7 @@ function initCellElementList() {
 (() => {
   // bind click event for all li element
   initCellElementList();
+  // checkGameStatus(cellValues);
   // bind click event for replay button
 
   //...

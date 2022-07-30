@@ -32,9 +32,6 @@ ul {
   text-align: center;
 }
 
-.game .chalk-board {
-}
-
 .game .chalk-board > img {
   width: 100%;
 }
@@ -50,9 +47,6 @@ ul {
 
 .game .game-details {
   margin-top: 8px;
-}
-
-.game .game-board {
 }
 
 .game .board-cells-list {
@@ -135,13 +129,33 @@ ul {
   color: red;
 }
 
-.game-replay {
-  display: none;
-  margin-top: 16px;
+.current-turn {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  text-transform: uppercase;
 }
 
-.game-replay.show {
-  display: block;
+.game-status {
+  margin: 8px 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.game-status > span {
+  color: white;
+}
+
+.game-replay {
+  margin-top: 8px;
+}
+
+.game-replay > button {
+  display: none;
+}
+
+.game-replay > button.show {
+  display: inline-block;
 }
 
 .game-replay > button {
