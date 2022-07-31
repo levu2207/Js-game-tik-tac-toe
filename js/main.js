@@ -5,15 +5,14 @@ import {
   getGameStatusElement,
   getCellElementAtIdx,
   getReplayButtonElement,
+  getCellListElement,
 } from "./selectors.js";
 import { checkGameStatus } from "./utils.js";
 
-// console.log(checkGameStatus(["X", "O", "O", "", "X", "", "", "O", "X"]));
 // Global variables
 let currentTurn = TURN.CROSS;
 let gameStatus = GAME_STATUS.PLAYING;
 let cellValues = new Array(9).fill("");
-// console.log(cellValues);
 
 function toggleTurn() {
   currentTurn = currentTurn === TURN.CROSS ? TURN.CIRCLE : TURN.CROSS;
@@ -28,6 +27,11 @@ function updateGameStatus(newGameStatus) {
 function showReplayButton() {
   const replayButton = getReplayButtonElement();
   if (replayButton) replayButton.classList.add("show");
+}
+
+function hideReplayButton() {
+  const replayButton = getReplayButtonElement();
+  if (replayButton) replayButton.classList.remove("show");
 }
 
 function highlightWinCells(winPositions) {
@@ -58,7 +62,6 @@ function handleCellClick(cell, index) {
 
   // toggle TURN
   toggleTurn();
-  // console.log("click", cell, index);
 
   // check game status
   const game = checkGameStatus(cellValues);
@@ -95,11 +98,54 @@ function handleCellClick(cell, index) {
 }
 
 function initCellElementList() {
-  const cellElementList = getCellElementList();
+  // set index for each li element
+  const liList = getCellElementList();
 
-  cellElementList.forEach((cell, index) => {
-    cell.addEventListener("click", () => handleCellClick(cell, index));
+  liList.forEach((cell, index) => {
+    cell.dataset.idx = index;
   });
+
+  // add event click for ul element
+  const ulElement = getCellListElement();
+  ulElement.addEventListener("click", (event) => {
+    if (event.target.tagName !== "LI") return;
+
+    const index = Number.parseInt(event.target.dataset.idx);
+
+    handleCellClick(event.target, index);
+  });
+}
+
+function resetGame() {
+  // reset global variables
+  currentTurn = TURN.CROSS;
+  gameStatus = GAME_STATUS.PLAYING;
+  cellValues = cellValues.map(() => "");
+  // reset dom element
+
+  // reset game status
+  updateGameStatus(GAME_STATUS.PLAYING);
+  // reset current TURN
+  const currentTurnElement = getCurrentTurnElement();
+  if (currentTurnElement) {
+    currentTurnElement.classList.remove(TURN.CROSS, TURN.CIRCLE);
+    currentTurnElement.classList.add(TURN.CROSS);
+  }
+  // reset game board
+  const cellElementList = getCellElementList();
+  for (const cellElement of cellElementList) {
+    cellElement.className = "";
+  }
+  // hide replay button
+  hideReplayButton();
+}
+
+function initReplayButton() {
+  const replayButton = getReplayButtonElement();
+
+  if (replayButton) {
+    replayButton.addEventListener("click", () => resetGame());
+  }
 }
 /**
  * TODOs
@@ -119,8 +165,7 @@ function initCellElementList() {
 (() => {
   // bind click event for all li element
   initCellElementList();
-  // checkGameStatus(cellValues);
-  // bind click event for replay button
 
-  //...
+  // bind click event for replay button
+  initReplayButton();
 })();
